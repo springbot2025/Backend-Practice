@@ -5,7 +5,7 @@ mod processor;
 use tokio::io::{self, AsyncBufReadExt, BufReader};
 use std::sync::atomic::{AtomicU64, Ordering};
 
-// 定义一个全局静态变量作为计数器，初始值为 1
+// 定义一个全局静态变量作为订单ID计数器，初始值为 1
 static NEXT_ORDER_ID: AtomicU64 = AtomicU64::new(1);
 #[tokio::main]
 
@@ -56,8 +56,8 @@ async fn main() {
         };
         println!("价格为{}元，请付款", &coffee.price());
     // 下面是制作过程，发送订单到后台制作和处理为Json
-    {
-        let order = order.clone();//order.clone()仅在这个作用域生效
+    { //order.clone()仅在这个作用域生效
+        let order = order.clone();
         tokio::spawn(async move{
             processor::process_coffee(&order).await;
         });

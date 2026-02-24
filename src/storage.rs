@@ -1,17 +1,6 @@
 ﻿use crate::models::Order;
 use tokio::fs;
 
-fn sanitize_filename(input: &str) -> String {
-    input
-        .chars()
-        .map(|ch| match ch {
-            '<' | '>' | ':' | '"' | '/' | '\\' | '|' | '?' | '*' => '_',
-            c if c.is_control() => '_',
-            c => c,
-        })
-        .collect()
-}
-
 pub async fn save_order(order: Order) {
     let json = serde_json::to_string_pretty(&order).unwrap();
     fs::create_dir_all("orders").await.unwrap();
