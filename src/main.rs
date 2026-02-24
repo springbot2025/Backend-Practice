@@ -2,13 +2,15 @@ mod models;
 mod storage;
 mod processor;
 
-
 use tokio::io::{self, AsyncBufReadExt, BufReader};
+use std::sync::atomic::{AtomicU64, Ordering};
 
+// 定义一个全局静态变量作为计数器，初始值为 1
+static NEXT_ORDER_ID: AtomicU64 = AtomicU64::new(1);
 #[tokio::main]
 
 async fn main() {
-    println!("Ttdr's coffee shop is running……");
+    println!("Spring's coffee shop is running……");
 
     println!("请输入你的名字:");
     let stdin = io::stdin();
@@ -44,7 +46,9 @@ async fn main() {
                 continue;
             },
         };
+        let order_id = NEXT_ORDER_ID.fetch_add(1, Ordering::SeqCst);
         let order = models::Order{
+            id: order_id,
             name: name.to_string(),
             time: coffee.time(),
             price: coffee.price(),

@@ -47,6 +47,7 @@ impl Coffee {
 }
 #[derive(Serialize, Clone)]
 pub struct Order {
+    pub id: u64,
     pub typ:Coffee,
     pub name: String,
     pub time: u16,
