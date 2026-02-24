@@ -1,25 +1,64 @@
-use axum::{
-    routing::get,
-    Router,
-};
+mod models;
+mod storage;
+mod processor;
 
-#[tokio::main] // 这个宏让 main 函数支持异步运行
+
+use tokio::io::{self, AsyncBufReadExt, BufReader};
+
+#[tokio::main]
+
 async fn main() {
-    // 1. 定义路由：访问 "/" 路径时，执行下面的 handler 函数
-    let app = Router::new().route("/", get(handler));
+    println!("Ttdr's coffee shop is running……");
 
-    // 2. 绑定监听端口（监听本地 3000 端口）
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
-        .await
-        .unwrap();
-    
-    println!("服务器已启动：访问 http://localhost:3000");
+    println!("请输入你的名字:");
+    let stdin = io::stdin();
+    let mut name = String::new();
+    let mut reader = BufReader::new(stdin);
+    reader.read_line(&mut name).await.unwrap();
+    // 异步读取，防止卡死
+    let name = name.trim();
+    println!("你好,{}", name);
+    loop {
+        println!("咖啡菜单：");
+        for (i, coffee) in models::Coffee::ALL.iter().enumerate() {
+            println!("{}. {}", i + 1, coffee.name());
+        }
+        println!("请输入编号下单（输入quit退出程序）");
 
-    // 3. 启动服务器
-    axum::serve(listener, app).await.unwrap();
-}
+        let mut choice = String::new();
+        reader.read_line(&mut choice).await.unwrap();
+        if choice.trim() == "quit"{
+            println!("谢谢光临，再见！");
+            break; 
+        }
+        print!("你选择了：");
+        let coffee = match choice.trim(){
 
-// 一个简单的异步函数，处理请求
-async fn handler() -> &'static str {
-    "Hello, Rust Backend!"
+            "1" => models::Coffee::IceWater,
+            "2" => models::Coffee::HandDrip,
+            "3" => models::Coffee::Espresso,
+            "4" => models::Coffee::Latte,
+            "5" => models::Coffee::Cappuccino,
+            _ => {
+                println!("这是无效的输入，请重新选择");
+                continue;
+            },
+        };
+        let order = models::Order{
+            name: name.to_string(),
+            time: coffee.time(),
+            price: coffee.price(),
+            typ: coffee,
+        };
+        println!("价格为{}元，请付款", &coffee.price());
+    // 下面是制作过程，发送订单到后台制作和处理为Json
+    {
+        let order = order.clone();//order.clone()仅在这个作用域生效
+        tokio::spawn(async move{
+            processor::process_coffee(&order).await;
+        });
+    }
+    storage::save_order(order).await;
+    //制作完成
+    }
 }
