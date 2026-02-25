@@ -18,7 +18,7 @@ async fn main() {
     let mut reader = BufReader::new(stdin);
     reader.read_line(&mut name).await.unwrap();
     // 异步读取，防止卡死
-    let name = name.trim();
+    let name = name.trim(); //trim 返回一个&str对象
     println!("你好,{}", name);
     loop {
         println!("咖啡菜单：");
@@ -41,7 +41,7 @@ async fn main() {
             "4" => models::Coffee::Latte,
             "5" => models::Coffee::Cappuccino,
             _ => {
-                println!("这是无效的输入，请重新选择");
+                println!("无效的输入，请重新选择");
                 continue;
             },
         };
@@ -53,7 +53,7 @@ async fn main() {
             price: coffee.price(),
             typ: coffee,
         };
-        println!("价格为{}元，请付款", &coffee.price());
+        println!("价格为{}元，请付款", coffee.price());
     // 下面是制作过程，发送订单到后台制作和处理为Json
     { //order.clone()仅在这个作用域生效
         let order = order.clone();
