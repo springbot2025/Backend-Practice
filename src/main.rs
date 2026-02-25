@@ -35,7 +35,6 @@ async fn main() {
         }
         print!("你选择了：");
         let coffee = match choice.trim(){
-
             "1" => models::Coffee::IceWater,
             "2" => models::Coffee::HandDrip,
             "3" => models::Coffee::Espresso,
@@ -59,7 +58,7 @@ async fn main() {
     { //order.clone()仅在这个作用域生效
         let order = order.clone();
         tokio::spawn(async move{
-            processor::process_coffee(&order).await;
+            processor::process_coffee(order).await;
         });
     }
     storage::save_order(order).await;
